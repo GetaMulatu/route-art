@@ -19,6 +19,7 @@ function ObjectWrapper({
   canvasH,
   dispatch,
   selected,
+  allObjects,
   children,
 }: {
   obj: SceneObject;
@@ -28,6 +29,7 @@ function ObjectWrapper({
   canvasH: number;
   dispatch: Dispatch<SceneAction>;
   selected: boolean;
+  allObjects: SceneObject[];
   children: React.ReactNode;
 }) {
   const av = getAnimValue(obj.anim, timeS, canvasW, canvasH);
@@ -47,12 +49,21 @@ function ObjectWrapper({
     startY: isRoute ? (obj as RouteObject).routeOffsetY : obj.y,
     scale,
     onSelect: () => dispatch({ type: 'SELECT', id: obj.id }),
-    onChange: (x, y) =>
-      dispatch({
-        type: 'UPDATE_OBJ',
-        id: obj.id,
-        patch: isRoute ? { routeOffsetX: x, routeOffsetY: y } : { x, y },
-      }),
+    onChange: (x, y) => {
+      if (isRoute) {
+        dispatch({ type: 'UPDATE_OBJ', id: obj.id, patch: { routeOffsetX: x, routeOffsetY: y } });
+        return;
+      }
+      if (obj.groupId) {
+        const dx = x - obj.x;
+        const dy = y - obj.y;
+        allObjects
+          .filter((o) => o.groupId === obj.groupId)
+          .forEach((o) => dispatch({ type: 'UPDATE_OBJ', id: o.id, patch: { x: o.x + dx, y: o.y + dy } }));
+        return;
+      }
+      dispatch({ type: 'UPDATE_OBJ', id: obj.id, patch: { x, y } });
+    },
     // The route's hit area covers the entire canvas (its full-bleed SVG),
     // not just the drawn stroke, so a plain tap on "empty" background would
     // otherwise steal selection instead of clearing it.
@@ -115,13 +126,12 @@ export function SceneCanvas({
             canvasH={scene.canvasH}
             dispatch={dispatch}
             selected={obj.id === scene.selectedId}
+            allObjects={scene.objects}
           >
             {obj.type === 'route' && (
               <RouteLayer obj={obj} activity={activity} timeS={timeS} canvasW={scene.canvasW} canvasH={scene.canvasH} scale={scale} />
             )}
-            {obj.type === 'statsGroup' && (
-              <StatsGroupLayer obj={obj} activity={activity} timeS={timeS} canvasW={scene.canvasW} canvasH={scene.canvasH} scale={scale} />
-            )}
+            {obj.type === 'statsGroup' && <StatsGroupLayer obj={obj} activity={activity} timeS={timeS} scale={scale} />}
             {obj.type === 'text' && <TextLayer obj={obj} scale={scale} />}
             {obj.type === 'deco' && <DecoLayer obj={obj} scale={scale} />}
           </ObjectWrapper>
