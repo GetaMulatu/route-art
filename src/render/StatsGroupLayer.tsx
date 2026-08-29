@@ -3,6 +3,7 @@ import { Activity } from '../data/activities';
 import { STAT_LABELS, getStatValue } from '../data/format';
 import { getCountUpValue } from '../scene/animation';
 import { StatsGroupObject } from '../scene/types';
+import { resolveFontFamily } from './fonts';
 
 export function StatsGroupLayer({
   obj,
@@ -73,11 +74,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
   },
   label: {
+    fontFamily: resolveFontFamily(600),
     fontWeight: '600',
     letterSpacing: 1,
     textTransform: 'uppercase',
   },
   value: {
+    fontFamily: resolveFontFamily(700),
     fontWeight: '700',
   },
 });

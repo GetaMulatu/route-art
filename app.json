@@ -30,7 +30,8 @@
           "savePhotosPermission": "Allow $(PRODUCT_NAME) to save your route art to your photos",
           "isAccessMediaLocationEnabled": false
         }
-      ]
+      ],
+      "expo-font"
     ]
   }
 }
