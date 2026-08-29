@@ -1,8 +1,11 @@
-import { useMemo } from 'react';
-import { View } from 'react-native';
+import { Dispatch, useMemo } from 'react';
+import { Pressable, View } from 'react-native';
 import { ACTIVITIES } from '../data/activities';
+import { C } from '../editor/theme';
+import { useObjectDrag } from '../editor/controls/useObjectDrag';
 import { getAnimValue } from '../scene/animation';
-import { Scene, SceneObject } from '../scene/types';
+import { SceneAction } from '../scene/sceneReducer';
+import { RouteObject, Scene, SceneObject } from '../scene/types';
 import { DecoLayer } from './DecoLayer';
 import { RouteLayer } from './RouteLayer';
 import { StatsGroupLayer } from './StatsGroupLayer';
@@ -14,6 +17,8 @@ function ObjectWrapper({
   scale,
   canvasW,
   canvasH,
+  dispatch,
+  selected,
   children,
 }: {
   obj: SceneObject;
@@ -21,6 +26,8 @@ function ObjectWrapper({
   scale: number;
   canvasW: number;
   canvasH: number;
+  dispatch: Dispatch<SceneAction>;
+  selected: boolean;
   children: React.ReactNode;
 }) {
   const av = getAnimValue(obj.anim, timeS, canvasW, canvasH);
@@ -34,14 +41,41 @@ function ObjectWrapper({
   if (objScale !== 1) transforms.push({ scale: objScale });
   if (rotate !== 0) transforms.push({ rotate: `${rotate}deg` });
 
+  const isRoute = obj.type === 'route';
+  const { panHandlers } = useObjectDrag({
+    startX: isRoute ? (obj as RouteObject).routeOffsetX : obj.x,
+    startY: isRoute ? (obj as RouteObject).routeOffsetY : obj.y,
+    scale,
+    onSelect: () => dispatch({ type: 'SELECT', id: obj.id }),
+    onChange: (x, y) =>
+      dispatch({
+        type: 'UPDATE_OBJ',
+        id: obj.id,
+        patch: isRoute ? { routeOffsetX: x, routeOffsetY: y } : { x, y },
+      }),
+    // The route's hit area covers the entire canvas (its full-bleed SVG),
+    // not just the drawn stroke, so a plain tap on "empty" background would
+    // otherwise steal selection instead of clearing it.
+    selectImmediately: !isRoute,
+    onTap: isRoute ? () => dispatch({ type: 'SELECT', id: null }) : undefined,
+  });
+
   return (
     <View
+      {...panHandlers}
+      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       style={{
         position: 'absolute',
         left: obj.x * scale + offsetX * scale,
         top: obj.y * scale + offsetY * scale,
         opacity: Math.max(0, Math.min(1, alpha)),
         transform: transforms.length ? transforms : undefined,
+        borderWidth: selected ? 1.5 : 0,
+        borderColor: C.accent,
+        borderStyle: 'dashed',
+        // @ts-expect-error web-only CSS prop: without it, dragging text/stat
+        // objects starts a native text-selection drag instead of moving them.
+        userSelect: 'none',
       }}
     >
       {children}
@@ -49,16 +83,39 @@ function ObjectWrapper({
   );
 }
 
-export function SceneCanvas({ scene, timeS, scale }: { scene: Scene; timeS: number; scale: number }) {
+export function SceneCanvas({
+  scene,
+  timeS,
+  scale,
+  dispatch,
+}: {
+  scene: Scene;
+  timeS: number;
+  scale: number;
+  dispatch: Dispatch<SceneAction>;
+}) {
   const activity = useMemo(() => ACTIVITIES.find((a) => a.id === scene.activityId) || ACTIVITIES[0], [scene.activityId]);
   const sorted = useMemo(() => [...scene.objects].sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0)), [scene.objects]);
 
   return (
     <View style={{ width: scene.canvasW * scale, height: scene.canvasH * scale, overflow: 'hidden' }}>
+      <Pressable
+        onPress={() => dispatch({ type: 'SELECT', id: null })}
+        style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0 }}
+      />
       {sorted.map((obj) => {
         if (!obj.visible) return null;
         return (
-          <ObjectWrapper key={obj.id} obj={obj} timeS={timeS} scale={scale} canvasW={scene.canvasW} canvasH={scene.canvasH}>
+          <ObjectWrapper
+            key={obj.id}
+            obj={obj}
+            timeS={timeS}
+            scale={scale}
+            canvasW={scene.canvasW}
+            canvasH={scene.canvasH}
+            dispatch={dispatch}
+            selected={obj.id === scene.selectedId}
+          >
             {obj.type === 'route' && (
               <RouteLayer obj={obj} activity={activity} timeS={timeS} canvasW={scene.canvasW} canvasH={scene.canvasH} scale={scale} />
             )}

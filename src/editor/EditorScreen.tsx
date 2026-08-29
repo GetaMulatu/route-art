@@ -100,7 +100,7 @@ export function EditorScreen() {
       <View style={styles.body}>
         <View style={styles.previewArea}>
           <View ref={canvasRef} collapsable={false} style={[styles.canvasFrame, { width: previewW, height: previewH }]}>
-            <SceneCanvas scene={scene} timeS={timeS} scale={scale} />
+            <SceneCanvas scene={scene} timeS={timeS} scale={scale} dispatch={dispatch} />
           </View>
           <Text style={styles.previewCaption}>
             {scene.canvasW}×{scene.canvasH} · {scene.canvasPreset.toUpperCase()}

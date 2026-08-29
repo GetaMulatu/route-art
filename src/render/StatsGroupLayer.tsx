@@ -50,7 +50,10 @@ export function StatsGroupLayer({
   const colW = (canvasW * scale - obj.x * scale * 2) / cols;
 
   return (
-    <View>
+    // Every row below is position:'absolute', which would otherwise leave
+    // this View at its default 0x0 intrinsic size — sizing it explicitly
+    // gives the group a real, draggable hit area matching its visible grid.
+    <View style={{ width: colW * cols, height: rowH * rows }}>
       {obj.stats.map((stat, i) => {
         const col = i % cols;
         const row = Math.floor(i / cols);
