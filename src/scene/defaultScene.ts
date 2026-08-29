@@ -29,7 +29,7 @@ export function makeDefaultScene(activityId = 'run-loop'): Scene {
         showGlow: true, glowBlur: 18, glowAlpha: 0.35,
         showGradient: false, gradColorStart: '#FC4C02', gradColor: '#FF6B9D',
         showDots: true, dotStart: true, dotEnd: true,
-        showOutline: false, outlineColor: '#000000', outlineWidth: 4,
+        showOutline: false, outlineColor: '#FFFFFF', outlineWidth: 4,
         anim: { type: 'draw', delay: 0.4, duration: 2.2, easeFunc: 'easeInOut' },
       },
       {
