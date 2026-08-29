@@ -9,11 +9,13 @@ export function StatsGroupLayer({
   obj,
   activity,
   timeS,
+  canvasH,
   scale,
 }: {
   obj: StatsGroupObject;
   activity: Activity | undefined;
   timeS: number;
+  canvasH: number;
   scale: number;
 }) {
   const groupDelay = obj.anim?.delay ?? 0;
@@ -22,11 +24,27 @@ export function StatsGroupLayer({
   const cols = obj.cols || 2;
   const rows = Math.ceil(obj.stats.length / cols);
 
-  const valueFontSize = obj.valueFontSize * scale;
-  const labelFontSize = obj.labelFontSize * scale;
-  const rowGap = obj.rowGap * scale;
-  const lineGap = obj.lineGap * scale;
-  const rowH = valueFontSize + labelFontSize + lineGap + rowGap;
+  let valueFontSize = obj.valueFontSize * scale;
+  let labelFontSize = obj.labelFontSize * scale;
+  let rowGap = obj.rowGap * scale;
+  let lineGap = obj.lineGap * scale;
+  let rowH = valueFontSize + labelFontSize + lineGap + rowGap;
+
+  // A layout with few columns (e.g. List mode) needs proportionally more
+  // rows for the same stat count, and can overflow past the canvas edge
+  // (clipped by SceneCanvas's overflow:hidden) with no visible warning.
+  // Shrink text/spacing uniformly to fit the space actually available
+  // below the group's start position rather than letting it clip silently.
+  const availableH = canvasH * scale - obj.y * scale;
+  const naturalH = rows * rowH;
+  if (availableH > 0 && naturalH > availableH) {
+    const shrink = availableH / naturalH;
+    valueFontSize *= shrink;
+    labelFontSize *= shrink;
+    rowGap *= shrink;
+    lineGap *= shrink;
+    rowH *= shrink;
+  }
 
   // Independent of x/y so dragging the group repositions it without
   // resizing its columns (overflow past the canvas edge just clips via

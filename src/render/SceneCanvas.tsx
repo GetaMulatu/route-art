@@ -131,7 +131,9 @@ export function SceneCanvas({
             {obj.type === 'route' && (
               <RouteLayer obj={obj} activity={activity} timeS={timeS} canvasW={scene.canvasW} canvasH={scene.canvasH} scale={scale} />
             )}
-            {obj.type === 'statsGroup' && <StatsGroupLayer obj={obj} activity={activity} timeS={timeS} scale={scale} />}
+            {obj.type === 'statsGroup' && (
+              <StatsGroupLayer obj={obj} activity={activity} timeS={timeS} canvasH={scene.canvasH} scale={scale} />
+            )}
             {obj.type === 'text' && <TextLayer obj={obj} scale={scale} />}
             {obj.type === 'deco' && <DecoLayer obj={obj} scale={scale} />}
           </ObjectWrapper>
