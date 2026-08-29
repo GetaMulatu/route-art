@@ -37,7 +37,7 @@ export function RoutePanel({ obj, dispatch, sceneDuration }: { obj: RouteObject 
               onPress={() =>
                 upd({
                   color: s.color, thickness: s.thickness, showGlow: s.showGlow,
-                  glowColor: s.glowColor ?? obj.glowColor, glowBlur: s.glowBlur ?? obj.glowBlur, glowAlpha: s.glowAlpha ?? obj.glowAlpha,
+                  glowBlur: s.glowBlur ?? obj.glowBlur, glowAlpha: s.glowAlpha ?? obj.glowAlpha,
                   showGradient: s.showGradient, gradColor: s.gradColor ?? obj.gradColor, lineStyle: s.lineStyle,
                 })
               }

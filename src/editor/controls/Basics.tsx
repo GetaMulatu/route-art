@@ -83,13 +83,6 @@ export function ColorField({ label, value, onChange }: { label: string; value: s
     onChange(hex);
   };
 
-  const pickSwatch = (c: string) => {
-    lastEmitted.current = c;
-    setDraft(c);
-    setHsv(hexToHsv(c));
-    onChange(c);
-  };
-
   return (
     <View style={styles.colorField}>
       <Row style={styles.colorFieldRow}>
@@ -111,11 +104,6 @@ export function ColorField({ label, value, onChange }: { label: string; value: s
         <View style={styles.colorPickerPanel}>
           <SVSquare hsv={hsv} onChange={(s, v) => setFromHsv({ ...hsv, s, v })} />
           <HueStrip hue={hsv.h} onChange={(h) => setFromHsv({ ...hsv, h })} />
-          <Row style={styles.quickSwatchRow}>
-            {QUICK_COLORS.map((c) => (
-              <ColorSwatch key={c} color={c} selected={value.toUpperCase() === c} onPress={() => pickSwatch(c)} />
-            ))}
-          </Row>
         </View>
       )}
     </View>
@@ -300,10 +288,6 @@ const styles = StyleSheet.create({
   colorPickerPanel: {
     marginTop: 8,
     marginBottom: 4,
-  },
-  quickSwatchRow: {
-    flexWrap: 'wrap',
-    rowGap: 8,
   },
   colorFieldLabel: {
     fontSize: 12,

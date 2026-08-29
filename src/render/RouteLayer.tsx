@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import Svg, { Circle, Defs, FeGaussianBlur, Filter, Path } from 'react-native-svg';
+import Svg, { Circle, Defs, FeGaussianBlur, Filter, G, Path } from 'react-native-svg';
 import { Activity } from '../data/activities';
 import { Point, projectCoords } from '../geo/projection';
 import { getRouteDrawFrac } from '../scene/animation';
@@ -126,16 +126,38 @@ export function RouteLayer({
       )}
 
       {obj.showGlow && (
-        <Path
-          d={dPath}
-          stroke={obj.glowColor || obj.color}
-          strokeWidth={glowStrokeWidth}
-          strokeOpacity={obj.glowAlpha || 0.6}
-          fill="none"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          filter={`url(#${filterId})`}
-        />
+        gradSegments ? (
+          // Grouping the segments and filtering the group (rather than
+          // filtering each segment path individually) makes SVG rasterize
+          // them into one buffer before blurring, so adjacent segments blend
+          // into a single continuous glow instead of showing a seam at each
+          // segment boundary.
+          <G filter={`url(#${filterId})`}>
+            {gradSegments.map((seg, i) => (
+              <Path
+                key={i}
+                d={seg.d}
+                stroke={seg.color}
+                strokeWidth={glowStrokeWidth}
+                strokeOpacity={obj.glowAlpha || 0.6}
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            ))}
+          </G>
+        ) : (
+          <Path
+            d={dPath}
+            stroke={obj.color}
+            strokeWidth={glowStrokeWidth}
+            strokeOpacity={obj.glowAlpha || 0.6}
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            filter={`url(#${filterId})`}
+          />
+        )
       )}
 
       {gradSegments ? (

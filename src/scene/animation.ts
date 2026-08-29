@@ -34,7 +34,7 @@ export interface AnimValue {
   offsetY?: number;
 }
 
-export function getAnimValue(anim: AnimDescriptor | undefined, timeS: number): AnimValue {
+export function getAnimValue(anim: AnimDescriptor | undefined, timeS: number, canvasW: number, canvasH: number): AnimValue {
   if (!anim || !anim.type || anim.type === 'none') return {};
   const { type, delay = 0, duration = 1, easeFunc = 'easeOut', loop = false } = anim;
   let t = (timeS - delay) / duration;
@@ -47,7 +47,11 @@ export function getAnimValue(anim: AnimDescriptor | undefined, timeS: number): A
     case 'fadeOut': return { alpha: 1 - e };
     case 'fadeInOut': return { alpha: t < 0.5 ? applyEasing(t * 2, easeFunc) : 1 - applyEasing((t - 0.5) * 2, easeFunc) };
     case 'scaleIn': return { alpha: e, scale: e };
-    case 'pop': { const v = t < 0.7 ? applyEasing(t / 0.7, 'easeOutBack') : 1; return { alpha: v, scale: v }; }
+    case 'pop': {
+      const alpha = applyEasing(Math.min(1, t / 0.25), 'easeOut');
+      const scale = applyEasing(t, 'easeOutBack');
+      return { alpha, scale };
+    }
     case 'pulse': { const v = 0.85 + 0.15 * Math.sin((timeS * Math.PI * 2) / (duration || 1)); return { alpha: v, scale: v }; }
     case 'breathing': {
       const { minS = 0.97, maxS = 1.03 } = anim;
@@ -58,10 +62,10 @@ export function getAnimValue(anim: AnimDescriptor | undefined, timeS: number): A
       const { amp = 12 } = anim;
       return { offsetY: amp * Math.sin((timeS * Math.PI * 2) / (duration || 3)) };
     }
-    case 'slideUp': return { offsetY: (1 - e) * 60 };
-    case 'slideDown': return { offsetY: -(1 - e) * 60 };
-    case 'slideLeft': return { offsetX: (1 - e) * 80 };
-    case 'slideRight': return { offsetX: -(1 - e) * 80 };
+    case 'slideUp': { const eb = applyEasing(t, 'easeOutBack'); return { offsetY: (1 - eb) * canvasH }; }
+    case 'slideDown': { const eb = applyEasing(t, 'easeOutBack'); return { offsetY: -(1 - eb) * canvasH }; }
+    case 'slideLeft': { const eb = applyEasing(t, 'easeOutBack'); return { offsetX: (1 - eb) * canvasW }; }
+    case 'slideRight': { const eb = applyEasing(t, 'easeOutBack'); return { offsetX: -(1 - eb) * canvasW }; }
     case 'tumble': return { alpha: e, rotate: (1 - e) * -22, scale: 0.85 + 0.15 * e };
     default: return {};
   }

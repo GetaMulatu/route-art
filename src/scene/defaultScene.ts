@@ -26,7 +26,7 @@ export function makeDefaultScene(activityId = 'run-loop'): Scene {
         x: 0, y: 0, scale: 1, rotation: 0,
         routeScale: 0.72, routeOffsetX: 0, routeOffsetY: -60,
         color: '#FC4C02', thickness: 5.5, lineStyle: 'solid',
-        showGlow: true, glowColor: '#FC4C02', glowBlur: 18, glowAlpha: 0.35,
+        showGlow: true, glowBlur: 18, glowAlpha: 0.35,
         showGradient: false, gradColorStart: '#FC4C02', gradColor: '#FF6B9D',
         showDots: true, dotStart: true, dotEnd: true,
         showOutline: false, outlineColor: '#000000', outlineWidth: 4,
@@ -72,10 +72,10 @@ export function makeDefaultScene(activityId = 'run-loop'): Scene {
 export const ROUTE_STYLE_PRESETS = [
   { id: 'minimal', label: 'Minimal', color: '#FFFFFF', thickness: 3.5, showGlow: false, showGradient: false, lineStyle: 'solid' as const },
   { id: 'bold', label: 'Bold', color: '#FC4C02', thickness: 7, showGlow: false, showGradient: false, lineStyle: 'solid' as const },
-  { id: 'neon', label: 'Neon', color: '#00FFAA', thickness: 4, showGlow: true, glowColor: '#00FFAA', glowBlur: 24, glowAlpha: 0.5, showGradient: false, lineStyle: 'solid' as const },
-  { id: 'gradient', label: 'Gradient', color: '#FC4C02', thickness: 5, showGlow: true, glowColor: '#FF6B9D', glowBlur: 12, glowAlpha: 0.25, showGradient: true, gradColor: '#FF6B9D', lineStyle: 'solid' as const },
+  { id: 'neon', label: 'Neon', color: '#00FFAA', thickness: 4, showGlow: true, glowBlur: 24, glowAlpha: 0.5, showGradient: false, lineStyle: 'solid' as const },
+  { id: 'gradient', label: 'Gradient', color: '#FC4C02', thickness: 5, showGlow: true, glowBlur: 12, glowAlpha: 0.25, showGradient: true, gradColor: '#FF6B9D', lineStyle: 'solid' as const },
   { id: 'dashed', label: 'Dashed', color: '#FFFFFF', thickness: 4, showGlow: false, showGradient: false, lineStyle: 'dashed' as const },
-  { id: 'cyber', label: 'Cyber', color: '#00D4FF', thickness: 4, showGlow: true, glowColor: '#00D4FF', glowBlur: 20, glowAlpha: 0.45, showGradient: true, gradColor: '#7B2FFF', lineStyle: 'solid' as const },
+  { id: 'cyber', label: 'Cyber', color: '#00D4FF', thickness: 4, showGlow: true, glowBlur: 20, glowAlpha: 0.45, showGradient: true, gradColor: '#7B2FFF', lineStyle: 'solid' as const },
 ];
 
 export interface AnimationPreset {

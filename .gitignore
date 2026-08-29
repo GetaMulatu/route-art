@@ -45,3 +45,6 @@ reference/*.gpx
 
 # unused duplicate of public/canvaskit.wasm (the one actually served at the web root) - leftover from an earlier setup attempt, not referenced by the app
 /web/
+
+# isolated git worktrees created by parallel Claude Code sessions - separate checkouts with their own branch/.git, not part of this repo's own history
+.claude/worktrees/

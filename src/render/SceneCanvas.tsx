@@ -8,8 +8,22 @@ import { RouteLayer } from './RouteLayer';
 import { StatsGroupLayer } from './StatsGroupLayer';
 import { TextLayer } from './TextLayer';
 
-function ObjectWrapper({ obj, timeS, scale, children }: { obj: SceneObject; timeS: number; scale: number; children: React.ReactNode }) {
-  const av = getAnimValue(obj.anim, timeS);
+function ObjectWrapper({
+  obj,
+  timeS,
+  scale,
+  canvasW,
+  canvasH,
+  children,
+}: {
+  obj: SceneObject;
+  timeS: number;
+  scale: number;
+  canvasW: number;
+  canvasH: number;
+  children: React.ReactNode;
+}) {
+  const av = getAnimValue(obj.anim, timeS, canvasW, canvasH);
   const alpha = (obj.opacity ?? 1) * (av.alpha ?? 1);
   const offsetX = av.offsetX ?? 0;
   const offsetY = av.offsetY ?? 0;
@@ -44,7 +58,7 @@ export function SceneCanvas({ scene, timeS, scale }: { scene: Scene; timeS: numb
       {sorted.map((obj) => {
         if (!obj.visible) return null;
         return (
-          <ObjectWrapper key={obj.id} obj={obj} timeS={timeS} scale={scale}>
+          <ObjectWrapper key={obj.id} obj={obj} timeS={timeS} scale={scale} canvasW={scene.canvasW} canvasH={scene.canvasH}>
             {obj.type === 'route' && (
               <RouteLayer obj={obj} activity={activity} timeS={timeS} canvasW={scene.canvasW} canvasH={scene.canvasH} scale={scale} />
             )}

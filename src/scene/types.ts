@@ -41,7 +41,6 @@ export interface RouteObject extends SceneObjectBase {
   thickness: number;
   lineStyle: 'solid' | 'dashed' | 'dotted';
   showGlow: boolean;
-  glowColor: string;
   glowBlur: number;
   glowAlpha: number;
   showGradient: boolean;
