@@ -86,6 +86,12 @@ export function RoutePanel({ obj, dispatch, sceneDuration }: { obj: RouteObject 
         </>
       )}
       <Toggle label="Outline" value={obj.showOutline} onChange={(v) => upd({ showOutline: v })} />
+      {obj.showOutline && (
+        <>
+          <ColorField label="Outline color" value={obj.outlineColor} onChange={(v) => upd({ outlineColor: v })} />
+          <Slider label="Outline width" value={obj.outlineWidth} min={1} max={20} step={0.5} onChange={(v) => upd({ outlineWidth: v })} format={(v) => `${v}px`} />
+        </>
+      )}
       <Toggle label="Start dot" value={obj.dotStart} onChange={(v) => upd({ dotStart: v })} />
       <Toggle label="End dot" value={obj.dotEnd} onChange={(v) => upd({ dotEnd: v })} />
       <Toggle label="Moving marker" value={!!obj.showMarker} onChange={(v) => upd({ showMarker: v })} />
