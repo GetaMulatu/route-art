@@ -28,6 +28,8 @@ interface SceneObjectBase {
   x: number;
   y: number;
   anim?: AnimDescriptor;
+  // Objects sharing a groupId move together when any one of them is dragged.
+  groupId?: string;
 }
 
 export interface RouteObject extends SceneObjectBase {
@@ -66,6 +68,8 @@ export interface StatsGroupObject extends SceneObjectBase {
   type: 'statsGroup';
   layout: 'grid' | 'list';
   cols: number;
+  // Total content width used for column layout, independent of x/y position.
+  width: number;
   color: string;
   labelColor: string;
   valueFontSize: number;

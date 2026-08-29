@@ -60,8 +60,8 @@ export function RoutePanel({ obj, dispatch, sceneDuration }: { obj: RouteObject 
       <Slider label="Thickness" value={obj.thickness} min={1} max={20} step={0.5} onChange={(v) => upd({ thickness: v })} format={(v) => `${v}px`} />
       <Slider label="Opacity" value={obj.opacity} min={0} max={1} step={0.05} onChange={(v) => upd({ opacity: v })} format={(v) => `${Math.round(v * 100)}%`} />
       <Slider label="Route scale" value={obj.routeScale} min={0.3} max={1.0} step={0.01} onChange={(v) => upd({ routeScale: v })} format={(v) => `${Math.round(v * 100)}%`} />
-      <Slider label="Offset X" value={obj.routeOffsetX} min={-400} max={400} step={5} onChange={(v) => upd({ routeOffsetX: v })} format={(v) => `${v}px`} />
-      <Slider label="Offset Y" value={obj.routeOffsetY} min={-600} max={600} step={5} onChange={(v) => upd({ routeOffsetY: v })} format={(v) => `${v}px`} />
+      <Slider label="Offset X" value={obj.routeOffsetX} min={-400} max={400} step={5} onChange={(v) => upd({ routeOffsetX: v })} format={(v) => `${v.toFixed(1)}px`} />
+      <Slider label="Offset Y" value={obj.routeOffsetY} min={-600} max={600} step={5} onChange={(v) => upd({ routeOffsetY: v })} format={(v) => `${v.toFixed(1)}px`} />
 
       <SectionDivider label="Line style" />
       <SegmentedControl

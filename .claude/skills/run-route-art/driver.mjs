@@ -78,6 +78,20 @@ const COMMANDS = {
       sel || null));
   },
 
+  async drag(args) {
+    if (!page) return console.log('ERROR: launch first');
+    const [x1, y1, x2, y2, steps] = args.split(' ').map(Number);
+    await page.mouse.move(x1, y1);
+    await page.mouse.down();
+    const n = steps || 10;
+    for (let i = 1; i <= n; i++) {
+      await page.mouse.move(x1 + ((x2 - x1) * i) / n, y1 + ((y2 - y1) * i) / n);
+      await page.waitForTimeout(16);
+    }
+    await page.mouse.up();
+    console.log('drag', args, '-> OK');
+  },
+
   console() {
     console.log('CONSOLE_ERRORS:', JSON.stringify(consoleErrors, null, 2));
   },
