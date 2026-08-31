@@ -114,8 +114,9 @@ export function StatsPanel({ obj, dispatch }: { obj: StatsGroupObject | undefine
         format={(v) => `${v.toFixed(1)}s`}
       />
 
-      <SectionDivider label="Position (Y)" />
-      <Slider label="Y offset" value={obj.y} min={400} max={1800} step={10} onChange={(v) => upd({ y: v })} format={(v) => `${v}px`} />
+      <SectionDivider label="Position" />
+      <Slider label="Offset X" value={obj.x} min={-200} max={1000} step={10} onChange={(v) => upd({ x: v })} format={(v) => `${v.toFixed(1)}px`} />
+      <Slider label="Offset Y" value={obj.y} min={400} max={1800} step={10} onChange={(v) => upd({ y: v })} format={(v) => `${v.toFixed(1)}px`} />
     </ScrollView>
   );
 }
