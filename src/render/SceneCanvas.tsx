@@ -6,6 +6,7 @@ import { useObjectDrag } from '../editor/controls/useObjectDrag';
 import { getAnimValue } from '../scene/animation';
 import { SceneAction } from '../scene/sceneReducer';
 import { RouteObject, Scene, SceneObject } from '../scene/types';
+import { BackgroundLayer } from './BackgroundLayer';
 import { DecoLayer } from './DecoLayer';
 import { RouteLayer } from './RouteLayer';
 import { StatsGroupLayer } from './StatsGroupLayer';
@@ -99,17 +100,22 @@ export function SceneCanvas({
   timeS,
   scale,
   dispatch,
+  hideBackground,
 }: {
   scene: Scene;
   timeS: number;
   scale: number;
   dispatch: Dispatch<SceneAction>;
+  // Used by the flattened-JPEG export path to capture the overlay alone,
+  // separately from a background still/video frame it composites in itself.
+  hideBackground?: boolean;
 }) {
   const activity = useMemo(() => ACTIVITIES.find((a) => a.id === scene.activityId) || ACTIVITIES[0], [scene.activityId]);
   const sorted = useMemo(() => [...scene.objects].sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0)), [scene.objects]);
 
   return (
     <View style={{ width: scene.canvasW * scale, height: scene.canvasH * scale, overflow: 'hidden' }}>
+      {scene.background && !hideBackground && <BackgroundLayer background={scene.background} timeS={timeS} />}
       <Pressable
         onPress={() => dispatch({ type: 'SELECT', id: null })}
         style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0 }}

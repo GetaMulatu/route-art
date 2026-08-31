@@ -38,6 +38,33 @@ const COMMANDS = {
     catch (e) { console.log('click', sel, '-> ERROR:', e.message); }
   },
 
+  // Click a button by its text and supply a local file to whatever <input
+  // type=file> that click opens — for expo-image-picker (and any web file
+  // picker), a script-dispatched click on a hidden file input has no real
+  // OS dialog to show in headless Chromium, so it auto-cancels instantly
+  // unless a filechooser listener is armed *before* the click, which is
+  // what this does via Playwright's page.waitForEvent('filechooser').
+  async 'filechoose-text'(args) {
+    if (!page) return console.log('ERROR: launch first');
+    const [filePath, ...textParts] = args.split(' ');
+    const text = textParts.join(' ');
+    try {
+      const [chooser] = await Promise.all([
+        page.waitForEvent('filechooser', { timeout: 5000 }),
+        page.evaluate(t => {
+          const els = [...document.querySelectorAll('button, a, [role="button"], div, span')];
+          const el = els.find(e => e.textContent?.trim() === t) ?? els.find(e => e.textContent?.trim().includes(t));
+          if (!el) throw new Error('NOT_FOUND: ' + t);
+          el.click();
+        }, text),
+      ]);
+      await chooser.setFiles(filePath);
+      console.log('filechoose-text', JSON.stringify(text), '->', 'OK, set', filePath);
+    } catch (e) {
+      console.log('filechoose-text', JSON.stringify(text), '-> ERROR:', e.message);
+    }
+  },
+
   async 'click-text'(text) {
     if (!page) return console.log('ERROR: launch first');
     const r = await page.evaluate(t => {

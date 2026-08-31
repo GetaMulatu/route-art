@@ -1,6 +1,6 @@
 import { RefObject, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { exportScenePng } from '../../export/exportScene';
+import { exportTransparentPng } from '../../export/exportTransparentPng';
 import { Scene } from '../../scene/types';
 import { Label, SectionDivider } from '../controls/Basics';
 import { C } from '../theme';
@@ -11,7 +11,15 @@ const MULTIPLIERS = [
   { m: 3, label: 'Print' },
 ];
 
-export function ExportPanel({ scene, canvasRef }: { scene: Scene; canvasRef: RefObject<View | null> }) {
+export function ExportPanel({
+  scene,
+  canvasRef,
+  timeS,
+}: {
+  scene: Scene;
+  canvasRef: RefObject<View | null>;
+  timeS: number;
+}) {
   const [mult, setMult] = useState(2);
   const [status, setStatus] = useState<'idle' | 'exporting' | 'done' | 'error'>('idle');
 
@@ -19,7 +27,7 @@ export function ExportPanel({ scene, canvasRef }: { scene: Scene; canvasRef: Ref
     if (status === 'exporting') return;
     setStatus('exporting');
     try {
-      await exportScenePng(canvasRef, scene.canvasW * mult, scene.canvasH * mult);
+      await exportTransparentPng(canvasRef, scene, timeS, scene.canvasW * mult, scene.canvasH * mult);
       setStatus('done');
       setTimeout(() => setStatus('idle'), 1500);
     } catch (e) {

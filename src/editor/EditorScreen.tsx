@@ -99,8 +99,10 @@ export function EditorScreen() {
 
       <View style={styles.body}>
         <View style={styles.previewArea}>
-          <View ref={canvasRef} collapsable={false} style={[styles.canvasFrame, { width: previewW, height: previewH }]}>
-            <SceneCanvas scene={scene} timeS={timeS} scale={scale} dispatch={dispatch} />
+          <View style={[styles.canvasFrameOuter, { width: previewW, height: previewH }]}>
+            <View ref={canvasRef} collapsable={false} style={[styles.canvasFrame, { width: previewW, height: previewH }]}>
+              <SceneCanvas scene={scene} timeS={timeS} scale={scale} dispatch={dispatch} />
+            </View>
           </View>
           <Text style={styles.previewCaption}>
             {scene.canvasW}×{scene.canvasH} · {scene.canvasPreset.toUpperCase()}
@@ -118,7 +120,7 @@ export function EditorScreen() {
             {activeTab === 'stats' && <StatsPanel obj={statsObj} dispatch={dispatch} />}
             {activeTab === 'canvas' && <CanvasPanel scene={scene} dispatch={dispatch} />}
             {activeTab === 'anim' && <AnimPresetsPanel scene={scene} dispatch={dispatch} />}
-            {activeTab === 'export' && <ExportPanel scene={scene} canvasRef={canvasRef} />}
+            {activeTab === 'export' && <ExportPanel scene={scene} canvasRef={canvasRef} timeS={timeS} />}
           </View>
         </View>
       </View>
@@ -185,9 +187,14 @@ const styles = StyleSheet.create({
     padding: 20,
     gap: 12,
   },
-  canvasFrame: {
+  // Editor-chrome-only backdrop: kept OUTSIDE the ref'd view below so
+  // captureRef-based export sees a transparent background, not this fill.
+  canvasFrameOuter: {
     backgroundColor: '#141414',
     borderRadius: 8,
+    overflow: 'hidden',
+  },
+  canvasFrame: {
     overflow: 'hidden',
   },
   previewCaption: {

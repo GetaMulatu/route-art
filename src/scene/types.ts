@@ -113,13 +113,20 @@ export interface CanvasPresetDef {
   icon: string;
 }
 
+// A user-supplied photo or video to sit behind the whole composition. When
+// set, transparency stops mattering (the background is already baked in),
+// so export switches from transparent PNG/WebP to a flattened opaque JPEG.
+export interface SceneBackground {
+  type: 'image' | 'video';
+  uri: string;
+}
+
 export interface Scene {
   canvasW: number;
   canvasH: number;
   canvasPreset: string;
   duration: number;
-  bgColor: string | null;
-  bgGradient: string | null;
+  background: SceneBackground | null;
   objects: SceneObject[];
   activityId: string;
   selectedId: string | null;
