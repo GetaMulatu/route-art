@@ -15,13 +15,17 @@ import { saveOutput } from './saveOutput';
 // html2canvas also silently drops the route's SVG glow filter (verified
 // visually), so the glow is rendered separately (real browser SVG
 // rendering, not html2canvas) and composited underneath.
-async function captureWebTransparentPng(
+//
+// Returns a canvas rather than encoded bytes so callers that need to
+// composite further (e.g. the flattened-JPEG export) can draw it directly,
+// without an encode/decode round trip.
+export async function renderWebOverlayCanvas(
   node: HTMLElement,
   scene: Scene,
   timeS: number,
   width: number,
   height: number
-): Promise<Uint8Array> {
+): Promise<HTMLCanvasElement> {
   const html2canvas = (await import('html2canvas')).default;
   const rendered = await html2canvas(node, { useCORS: true, backgroundColor: null });
 
@@ -40,8 +44,7 @@ async function captureWebTransparentPng(
   }
 
   ctx.drawImage(rendered, 0, 0, width, height);
-  const dataUrl = composite.toDataURL('image/png');
-  return base64ToBytes(dataUrl.split(',')[1]);
+  return composite;
 }
 
 export async function exportTransparentPng(
@@ -56,7 +59,8 @@ export async function exportTransparentPng(
   const filename = `route-art-${Date.now()}.png`;
 
   if (Platform.OS === 'web') {
-    const bytes = await captureWebTransparentPng(node as unknown as HTMLElement, scene, timeS, width, height);
+    const canvas = await renderWebOverlayCanvas(node as unknown as HTMLElement, scene, timeS, width, height);
+    const bytes = base64ToBytes(canvas.toDataURL('image/png').split(',')[1]);
     await saveOutput(bytes, 'png', filename);
   } else {
     const base64 = await captureRef(canvasRef, { format: 'png', quality: 1, result: 'base64', width, height });

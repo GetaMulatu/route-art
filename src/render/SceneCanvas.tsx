@@ -1,5 +1,5 @@
 import { Dispatch, useMemo } from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { ACTIVITIES } from '../data/activities';
 import { C } from '../editor/theme';
 import { useObjectDrag } from '../editor/controls/useObjectDrag';
@@ -100,22 +100,25 @@ export function SceneCanvas({
   timeS,
   scale,
   dispatch,
-  hideBackground,
 }: {
   scene: Scene;
   timeS: number;
   scale: number;
   dispatch: Dispatch<SceneAction>;
-  // Used by the flattened-JPEG export path to capture the overlay alone,
-  // separately from a background still/video frame it composites in itself.
-  hideBackground?: boolean;
 }) {
   const activity = useMemo(() => ACTIVITIES.find((a) => a.id === scene.activityId) || ACTIVITIES[0], [scene.activityId]);
   const sorted = useMemo(() => [...scene.objects].sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0)), [scene.objects]);
 
   return (
     <View style={{ width: scene.canvasW * scale, height: scene.canvasH * scale, overflow: 'hidden' }}>
-      {scene.background && !hideBackground && <BackgroundLayer background={scene.background} timeS={timeS} />}
+      {scene.background && (
+        // testID -> data-testid on web: the flattened-JPEG export path
+        // toggles this node's DOM visibility directly to capture the
+        // overlay alone, without coordinating a React re-render.
+        <View testID="bg-layer" style={StyleSheet.absoluteFill}>
+          <BackgroundLayer background={scene.background} timeS={timeS} />
+        </View>
+      )}
       <Pressable
         onPress={() => dispatch({ type: 'SELECT', id: null })}
         style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0 }}
