@@ -1,5 +1,6 @@
 import { RefObject, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { exportAnimatedWebp } from '../../export/exportAnimatedWebp';
 import { exportFlattenedJpeg } from '../../export/exportFlattenedJpeg';
 import { exportTransparentPng } from '../../export/exportTransparentPng';
 import { Scene } from '../../scene/types';
@@ -12,6 +13,8 @@ const MULTIPLIERS = [
   { m: 2, label: 'Retina' },
   { m: 3, label: 'Print' },
 ];
+
+const FPS_OPTIONS = [15, 24, 30];
 
 type Status = 'idle' | 'exporting' | 'done' | 'error';
 
@@ -65,21 +68,62 @@ function FlattenedJpegExport({ scene, canvasRef, timeS }: { scene: Scene; canvas
   );
 }
 
-function TransparentExports({ scene, canvasRef, timeS }: { scene: Scene; canvasRef: RefObject<View | null>; timeS: number }) {
+function TransparentExports({
+  scene,
+  canvasRef,
+  timeS,
+  setTimeS,
+  playing,
+  setPlaying,
+}: {
+  scene: Scene;
+  canvasRef: RefObject<View | null>;
+  timeS: number;
+  setTimeS: (t: number) => void;
+  playing: boolean;
+  setPlaying: (p: boolean) => void;
+}) {
   const [mult, setMult] = useState(2);
-  const [status, setStatus] = useState<Status>('idle');
+  const [pngStatus, setPngStatus] = useState<Status>('idle');
+  const [fps, setFps] = useState(24);
+  const [webpStatus, setWebpStatus] = useState<Status>('idle');
+  const [progress, setProgress] = useState(0);
 
-  const handleExport = async () => {
-    if (status === 'exporting') return;
-    setStatus('exporting');
+  const handlePngExport = async () => {
+    if (pngStatus === 'exporting') return;
+    setPngStatus('exporting');
     try {
       await exportTransparentPng(canvasRef, scene, timeS, scene.canvasW * mult, scene.canvasH * mult);
-      setStatus('done');
-      setTimeout(() => setStatus('idle'), 1500);
+      setPngStatus('done');
+      setTimeout(() => setPngStatus('idle'), 1500);
     } catch (e) {
       console.error('Export failed:', e);
-      setStatus('error');
-      setTimeout(() => setStatus('idle'), 2000);
+      setPngStatus('error');
+      setTimeout(() => setPngStatus('idle'), 2000);
+    }
+  };
+
+  const handleWebpExport = async () => {
+    if (webpStatus === 'exporting') return;
+    const wasPlaying = playing;
+    const originalTimeS = timeS;
+    setPlaying(false);
+    setWebpStatus('exporting');
+    setProgress(0);
+    try {
+      await exportAnimatedWebp(canvasRef, scene, scene.canvasW * mult, scene.canvasH * mult, setTimeS, {
+        fps,
+        onProgress: setProgress,
+      });
+      setWebpStatus('done');
+      setTimeout(() => setWebpStatus('idle'), 1500);
+    } catch (e) {
+      console.error('Export failed:', e);
+      setWebpStatus('error');
+      setTimeout(() => setWebpStatus('idle'), 2000);
+    } finally {
+      setTimeS(originalTimeS);
+      setPlaying(wasPlaying);
     }
   };
 
@@ -95,14 +139,34 @@ function TransparentExports({ scene, canvasRef, timeS }: { scene: Scene; canvasR
           </Pressable>
         ))}
       </View>
-
-      <Pressable onPress={handleExport} style={styles.exportBtn} disabled={status === 'exporting'}>
-        {status === 'exporting' ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.exportBtnText}>↓ Download PNG</Text>}
+      <Pressable onPress={handlePngExport} style={styles.exportBtn} disabled={pngStatus === 'exporting'}>
+        {pngStatus === 'exporting' ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.exportBtnText}>↓ Download PNG</Text>}
       </Pressable>
-      <StatusText status={status} />
+      <StatusText status={pngStatus} />
 
-      <SectionDivider label="Animated export" />
-      <Text style={styles.comingSoon}>Transparent animated WebP export is coming next.</Text>
+      <SectionDivider label="Animated WebP" />
+      <Text style={styles.hint}>Transparent, plays natively in browsers — great for layering into other tools (e.g. as a photo/sticker layer in Instagram's editor).</Text>
+      <Label>Frame rate</Label>
+      <View style={styles.fpsRow}>
+        {FPS_OPTIONS.map((f) => (
+          <Pressable key={f} onPress={() => setFps(f)} style={[styles.fpsBtn, fps === f && styles.fpsBtnActive]}>
+            <Text style={[styles.fpsBtnText, fps === f && styles.fpsBtnTextActive]}>{f} fps</Text>
+          </Pressable>
+        ))}
+      </View>
+      <Pressable onPress={handleWebpExport} style={styles.exportBtn} disabled={webpStatus === 'exporting'}>
+        {webpStatus === 'exporting' ? (
+          <Text style={styles.exportBtnText}>Rendering… {Math.round(progress * 100)}%</Text>
+        ) : (
+          <Text style={styles.exportBtnText}>↓ Download Animated WebP</Text>
+        )}
+      </Pressable>
+      {webpStatus === 'exporting' && (
+        <View style={styles.progressTrack}>
+          <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
+        </View>
+      )}
+      <StatusText status={webpStatus} />
     </>
   );
 }
@@ -111,17 +175,23 @@ export function ExportPanel({
   scene,
   canvasRef,
   timeS,
+  setTimeS,
+  playing,
+  setPlaying,
 }: {
   scene: Scene;
   canvasRef: RefObject<View | null>;
   timeS: number;
+  setTimeS: (t: number) => void;
+  playing: boolean;
+  setPlaying: (p: boolean) => void;
 }) {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {scene.background ? (
         <FlattenedJpegExport scene={scene} canvasRef={canvasRef} timeS={timeS} />
       ) : (
-        <TransparentExports scene={scene} canvasRef={canvasRef} timeS={timeS} />
+        <TransparentExports scene={scene} canvasRef={canvasRef} timeS={timeS} setTimeS={setTimeS} playing={playing} setPlaying={setPlaying} />
       )}
     </ScrollView>
   );
@@ -162,6 +232,30 @@ const styles = StyleSheet.create({
     color: C.textMuted,
     fontSize: 12,
   },
+  fpsRow: {
+    flexDirection: 'row',
+    gap: 6,
+    marginBottom: 12,
+  },
+  fpsBtn: {
+    flex: 1,
+    paddingVertical: 8,
+    borderRadius: 7,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: C.border,
+    alignItems: 'center',
+  },
+  fpsBtnActive: {
+    backgroundColor: C.accentMuted,
+    borderColor: C.accent,
+  },
+  fpsBtnText: {
+    color: C.textMuted,
+    fontSize: 12,
+  },
+  fpsBtnTextActive: {
+    color: C.text,
+  },
   exportBtn: {
     padding: 12,
     borderRadius: 9,
@@ -174,6 +268,18 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
   },
+  progressTrack: {
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: C.border,
+    marginTop: -12,
+    marginBottom: 16,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: C.accent,
+  },
   statusText: {
     fontSize: 11,
     color: C.textSub,
@@ -185,10 +291,5 @@ const styles = StyleSheet.create({
     color: '#FF6B6B',
     marginTop: -10,
     marginBottom: 12,
-  },
-  comingSoon: {
-    fontSize: 12,
-    color: C.textMuted,
-    lineHeight: 18,
   },
 });

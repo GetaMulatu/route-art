@@ -120,7 +120,16 @@ export function EditorScreen() {
             {activeTab === 'stats' && <StatsPanel obj={statsObj} dispatch={dispatch} />}
             {activeTab === 'canvas' && <CanvasPanel scene={scene} dispatch={dispatch} />}
             {activeTab === 'anim' && <AnimPresetsPanel scene={scene} dispatch={dispatch} />}
-            {activeTab === 'export' && <ExportPanel scene={scene} canvasRef={canvasRef} timeS={timeS} />}
+            {activeTab === 'export' && (
+              <ExportPanel
+                scene={scene}
+                canvasRef={canvasRef}
+                timeS={timeS}
+                setTimeS={setTimeS}
+                playing={playing}
+                setPlaying={setPlaying}
+              />
+            )}
           </View>
         </View>
       </View>
