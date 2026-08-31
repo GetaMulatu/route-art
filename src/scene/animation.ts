@@ -94,6 +94,6 @@ export function getCountUpValue(
   if (timeS < delay) return null;
   const t = applyEasing((timeS - delay) / duration, easeFunc);
   const cur = num.value * t;
-  if (num.isDuration) return fmt.dur(Math.floor(cur));
+  if (num.isDuration) return fmt.dur(Math.floor(cur)) + num.suffix;
   return cur.toFixed(num.decimals) + num.suffix;
 }

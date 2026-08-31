@@ -20,8 +20,7 @@ export const fmt = {
     return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${String(ss).padStart(2, '0')}` : `${m}:${String(ss).padStart(2, '0')}`;
   },
   speed: (mps: number, imp: boolean) => (imp ? (mps * 2.237).toFixed(1) + ' mph' : (mps * 3.6).toFixed(1) + ' km/h'),
-  pace: (mps: number, imp: boolean, type: string) => {
-    if (type === 'Ride') return fmt.speed(mps, imp);
+  pace: (mps: number, imp: boolean) => {
     if (mps <= 0) return '—';
     const spk = imp ? 1609.34 / mps : 1000 / mps;
     return `${Math.floor(spk / 60)}:${String(Math.round(spk % 60)).padStart(2, '0')}${imp ? '/mi' : '/km'}`;
@@ -38,7 +37,7 @@ export function getStatValue(act: Activity | undefined, id: string, imp: boolean
     case 'movingTime': return fmt.dur(act.movingTime);
     case 'avgSpeed': return fmt.speed(act.averageSpeed, imp);
     case 'maxSpeed': return fmt.speed(act.maxSpeed, imp);
-    case 'avgPace': return fmt.pace(act.averageSpeed, imp, act.activityType);
+    case 'avgPace': return fmt.pace(act.averageSpeed, imp);
     case 'maxElevation': return fmt.elev(act.maxElevation, imp);
     case 'elevationGain': return fmt.elev(act.elevationGain, imp) + ' ↑';
     case 'calories': return act.calories ? act.calories + ' cal' : '—';
@@ -57,6 +56,11 @@ export function getStatNumeric(act: Activity | undefined, id: string, imp: boole
     case 'duration': return { value: act.elapsedTime, suffix: '', decimals: 0, isDuration: true };
     case 'movingTime': return { value: act.movingTime, suffix: '', decimals: 0, isDuration: true };
     case 'avgSpeed': return { value: imp ? act.averageSpeed * 2.237 : act.averageSpeed * 3.6, suffix: imp ? ' mph' : ' km/h', decimals: 1 };
+    case 'avgPace': {
+      if (act.averageSpeed <= 0) return { value: 0, suffix: '', decimals: 0 };
+      const spk = imp ? 1609.34 / act.averageSpeed : 1000 / act.averageSpeed;
+      return { value: spk, suffix: imp ? '/mi' : '/km', decimals: 0, isDuration: true };
+    }
     case 'maxSpeed': return { value: imp ? act.maxSpeed * 2.237 : act.maxSpeed * 3.6, suffix: imp ? ' mph' : ' km/h', decimals: 1 };
     case 'elevationGain': return { value: imp ? act.elevationGain * 3.281 : act.elevationGain, suffix: imp ? ' ft ↑' : ' m ↑', decimals: 0 };
     case 'maxElevation': return { value: imp ? act.maxElevation * 3.281 : act.maxElevation, suffix: imp ? ' ft' : ' m', decimals: 0 };
