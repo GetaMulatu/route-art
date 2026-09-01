@@ -1,6 +1,6 @@
 import { ACTIVITIES } from '../data/activities';
 import { dateLabelFor, PRESETS } from './defaultScene';
-import { Scene, SceneObject } from './types';
+import { Scene, SceneBackground, SceneObject } from './types';
 
 export type SceneAction =
   | { type: 'SET_ACTIVITY'; id: string }
@@ -8,7 +8,9 @@ export type SceneAction =
   | { type: 'SET_CUSTOM_CANVAS'; w?: number; h?: number }
   | { type: 'UPDATE_OBJ'; id: string; patch: Record<string, unknown> }
   | { type: 'SELECT'; id: string | null }
-  | { type: 'SET_DURATION'; v: number };
+  | { type: 'SET_DURATION'; v: number }
+  | { type: 'SET_BACKGROUND'; background: SceneBackground }
+  | { type: 'CLEAR_BACKGROUND' };
 
 export function sceneReducer(state: Scene, action: SceneAction): Scene {
   switch (action.type) {
@@ -43,6 +45,10 @@ export function sceneReducer(state: Scene, action: SceneAction): Scene {
       });
       return { ...state, duration: newDur, objects };
     }
+    case 'SET_BACKGROUND':
+      return { ...state, background: action.background };
+    case 'CLEAR_BACKGROUND':
+      return { ...state, background: null };
     default:
       return state;
   }

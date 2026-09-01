@@ -1,11 +1,29 @@
 import { Dispatch } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { PRESETS } from '../../scene/defaultScene';
 import { SceneAction } from '../../scene/sceneReducer';
 import { Scene } from '../../scene/types';
 import { Label, Row, SectionDivider } from '../controls/Basics';
 import { Slider } from '../controls/Slider';
 import { C } from '../theme';
+
+async function pickBackground(type: 'image' | 'video', dispatch: Dispatch<SceneAction>) {
+  if (Platform.OS !== 'web') {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) return;
+  }
+  try {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: type === 'image' ? ['images'] : ['videos'],
+      quality: 1,
+    });
+    if (result.canceled || !result.assets?.[0]) return;
+    dispatch({ type: 'SET_BACKGROUND', background: { type, uri: result.assets[0].uri } });
+  } catch (e) {
+    console.error('Background pick failed:', e);
+  }
+}
 
 export function CanvasPanel({ scene, dispatch }: { scene: Scene; dispatch: Dispatch<SceneAction> }) {
   return (
@@ -54,6 +72,32 @@ export function CanvasPanel({ scene, dispatch }: { scene: Scene; dispatch: Dispa
 
       <SectionDivider label="Duration" />
       <Slider label="Animation duration" value={scene.duration} min={1} max={12} step={0.5} onChange={(v) => dispatch({ type: 'SET_DURATION', v })} format={(v) => `${v.toFixed(1)}s`} />
+
+      <SectionDivider label="Background" />
+      {scene.background ? (
+        <>
+          <Row style={styles.bgRow}>
+            <Text style={styles.bgLabel}>{scene.background.type === 'image' ? '🖼 Photo' : '🎬 Video'} set</Text>
+          </Row>
+          <Row>
+            <Pressable style={styles.bgBtn} onPress={() => pickBackground(scene.background!.type, dispatch)}>
+              <Text style={styles.bgBtnText}>Replace</Text>
+            </Pressable>
+            <Pressable style={styles.bgBtn} onPress={() => dispatch({ type: 'CLEAR_BACKGROUND' })}>
+              <Text style={styles.bgBtnText}>Remove</Text>
+            </Pressable>
+          </Row>
+        </>
+      ) : (
+        <Row>
+          <Pressable style={styles.bgBtn} onPress={() => pickBackground('image', dispatch)}>
+            <Text style={styles.bgBtnText}>Add Photo</Text>
+          </Pressable>
+          <Pressable style={styles.bgBtn} onPress={() => pickBackground('video', dispatch)}>
+            <Text style={styles.bgBtnText}>Add Video</Text>
+          </Pressable>
+        </Row>
+      )}
     </ScrollView>
   );
 }
@@ -98,5 +142,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 7,
     backgroundColor: '#181818',
+  },
+  bgRow: {
+    marginBottom: 8,
+  },
+  bgLabel: {
+    color: C.textSub,
+    fontSize: 12,
+  },
+  bgBtn: {
+    flex: 1,
+    paddingVertical: 9,
+    borderRadius: 8,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: C.border,
+    alignItems: 'center',
+  },
+  bgBtnText: {
+    color: C.text,
+    fontSize: 12,
+    fontWeight: '600',
   },
 });

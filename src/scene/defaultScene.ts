@@ -15,8 +15,7 @@ export function makeDefaultScene(activityId = 'run-loop'): Scene {
     canvasH: 1920,
     canvasPreset: 'story',
     duration: 5.0,
-    bgColor: null,
-    bgGradient: null,
+    background: null,
     activityId,
     selectedId: null,
     objects: [
